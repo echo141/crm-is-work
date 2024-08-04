@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>CRM Система</title>
+</head>
+<body>
+    <h1>Дашборд Заявок</h1>
+    
+    <form id="request-form">
+        <input type="text" placeholder="Инициатор" name="initiator" required />
+        <input type="text" placeholder="Услуга" name="service" required />
+        <select name="status" required>
+            <option value="Новая">Новая</option>
+            <option value="В процессе">В процессе</option>
+            <option value="Завершена">Завершена</option>
+        </select>
+        <textarea name="description" placeholder="Описание" required></textarea>
+        <select name="responsible" required>
+            <option value="Иван Иванов">Иван Иванов</option>
+            <option value="Мария Петрова">Мария Петрова</option>
+            <option value="Алексей Смирнов">Алексей Смирнов</option>
+            <option value="Ольга Кузнецова">Ольга Кузнецова</option>
+        </select>
+        <input type="date" name="due_date" required />
+        <textarea name="comments" placeholder="Комментарии"></textarea>
+        <button type="submit">Создать заявку</button>
+    </form>
+
+    <h2>Список Заявок</h2>
+    <table id="requests-table">
+        <thead>
+            <tr>
+                <th>Инициатор</th>
+                <th>Услуга</th>
+                <th>Состояние</th>
+                <th>Описание</th>
+                <th>Ответственный</th>
+                <th>Крайний срок</th>
+                <th>Комментарии</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Заявки будут отображаться здесь -->
+        </tbody>
+    </table>
+
+    <script>
+        const form = document.getElementById('request-form');
+        const tableBody = document.getElementById('requests-table').querySelector('tbody');
+        // Функция для загрузки заявок
+        function loadRequests() {
+            fetch('/requests')
+                .then(response => response.json())
+                .then(requests => {
+                    tableBody.innerHTML = '';
+                    requests.forEach(request => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${request.initiator}</td>
+                            <td>${request.service}</td>
+                            <td>${request.status}</td>
+                            <td>${request.description}</td>
+                            <td>${request.responsible}</td>
+                            <td>${request.due_date}</td>
+                            <td>${request.comments}</td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                });
+        }
+
+        // Добавление новой заявки
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            const formData = new FormData(form);
+            const requestData = Object.fromEntries(formData);
+            fetch('/requests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            }).then(() => {
+                loadRequests();
+                form.reset();
+            });
+        });
+
+        // Загрузка заявок при загрузке страницы
+        loadRequests();
+    </script>
+</body>
+</html>
